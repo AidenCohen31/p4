@@ -1,4 +1,6 @@
 #include <sys/select.h>
+#include <stdio.h>
+#include "mfs.h"
 
 // Takes a host name and port number and uses those to find the server exporting the file system.
 int MFS_Init(char *hostname, int port){
