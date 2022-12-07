@@ -2,7 +2,8 @@ CC     := gcc
 CFLAGS := -Wall -Werror 
 
 SRCS   := client.c \
-	server.c 
+	server.c  \
+	mkfs.c \
 
 OBJS   := ${SRCS:c=o}
 PROGS  := ${SRCS:.c=}
@@ -18,3 +19,12 @@ clean:
 
 %.o: %.c Makefile
 	${CC} ${CFLAGS} -c $<
+
+libmfs.so: libmfs.o
+	gcc -shared -Wl,-soname,libmfs.so -o libmfs.so libmfs.o -lc
+
+libmfs.o: libmfs.c
+	gcc -fPIC -g -c -Wall libmfs.c
+
+main:
+	gcc -o main main.c -Wall -L. -lmfs
