@@ -17,8 +17,8 @@ typedef struct {
     int inum;
     int offset;
     int nbytes;
-    char* buffer;
-    char* name;
+    char buffer[4096];
+    char name[28];
 } message_t;
 
 #endif // __message_h__

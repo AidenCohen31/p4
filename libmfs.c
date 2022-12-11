@@ -1,18 +1,36 @@
 #include <sys/select.h>
 #include <stdio.h>
 #include "mfs.h"
-
+#include "udp.h"
+#include "message.h"
+struct sockaddr_in addrSnd,addrRcv;
+int sd;
 // Takes a host name and port number and uses those to find the server exporting the file system.
 int MFS_Init(char *hostname, int port){
+
+    sd = UDP_Open(port);
+    int rc = UDP_FillSockAddr(&addrSnd, hostname, port);
+    assert(rc>-1);
     return 0;
 }
-
 // Takes the parent inode number (which should be the inode number of a directory) and looks up the entry name in it. 
 // The inode number of name is returned. 
 // Success: return inode number of name
 // Failure: return -1. Failure modes: invalid pinum, name does not exist in pinum.
 int MFS_Lookup(int pinum, char *name){
-    return 0;
+    message_t message;
+    message.mtype = MFS_LOOKUP;
+    message.inum = pinum;
+    strcpy(message.name,name);
+    int rc = UDP_Write(sd,&addrSnd,(char*)(&message),sizeof(message_t));
+    if(rc<0){
+        printf("Client failed to send\n");
+        return -1;
+    }
+    printf("client:: wait for reply...\n");
+    rc = UDP_Read(sd, &addrRcv, (char *) &message, sizeof(message_t));
+    if(message.rc!=0) return -1;
+    return message.inum;
 }
 
 // Returns some information about the file specified by inum. Upon success, return 0, otherwise -1. 
