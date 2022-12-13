@@ -41,7 +41,7 @@ void clear_bit(unsigned int *bitmap, int position){
 inode_t* get_inode(int inum){
     //inode is out of range
     if(inum>=s->num_inodes){
-        printf("inum out of range\n");
+        fprintf(stderr,"inum out of range\n");
         return 0;
     }
     //Maybe we consult bitmap??????
@@ -67,7 +67,7 @@ int file_read(int inum, char *buffer, int offset, int nbytes){
     inode_t* inode = get_inode(inum);
     if(inode==0) return -1;
     if(offset+nbytes>inode->size){
-        printf("Read too big\n");
+        fprintf(stderr,"Read too big\n");
         return -1;
     }
     
@@ -199,6 +199,7 @@ int create(int pinum, int type, char *name){
 int file_unlink(int pinum, char *name){
     inode_t* parent_inode = get_inode(pinum);
     if(parent_inode==0) return -1;
+    if(parent_inode->type!=UFS_DIRECTORY) return -1;
     for(int i = 0; i<parent_inode->size/sizeof(dir_ent_t); i++){
         dir_ent_t* directory_entry = (dir_ent_t*) get_pointer(parent_inode,i*sizeof(dir_ent_t));
         if(directory_entry->inum!=-1&&strcmp(directory_entry->name,name)==0){
@@ -249,7 +250,7 @@ int main(int argc, char *argv[]) {
     signal(SIGINT, intHandler);
     //Setup
     if(argc!=3){
-        printf("Invalid number of arguments\n");
+        fprintf(stderr,"Invalid number of arguments\n");
         return 1;
     }
 
@@ -258,8 +259,9 @@ int main(int argc, char *argv[]) {
     assert(sd > -1);
 
     fileSystemImage = open(argv[2],O_RDWR|O_SYNC);
+    //fileSystemImage = open("test.img",O_RDWR|O_SYNC);
     if(fileSystemImage==-1){
-        printf("image does not exist\n");
+        fprintf(stderr,"image does not exist\n");
         return -1;
     }
     struct stat sbuf;
@@ -270,14 +272,9 @@ int main(int argc, char *argv[]) {
 
     //Get superblock
     s = (super_t *) image;
-    printf("inode bitmap address %d [len %d]\n", s->inode_bitmap_addr, s->inode_bitmap_len);
-    printf("data bitmap address %d [len %d]\n", s->data_bitmap_addr, s->data_bitmap_len);
 
     //Get inode table
     inode_table = image + (s->inode_region_addr * UFS_BLOCK_SIZE);
-    inode_t *root_inode = inode_table;
-    printf("\nroot type:%d root size:%d\n", root_inode->type, root_inode->size);
-    printf("direct pointers[0]:%d [1]:%d\n", root_inode->direct[0], root_inode->direct[1]);
 
     //Get inode bitmap
     inode_bitmap = image+(s->inode_bitmap_addr*UFS_BLOCK_SIZE);
@@ -290,9 +287,9 @@ int main(int argc, char *argv[]) {
         struct sockaddr_in addr;
         int result;
         message_t* message = malloc(sizeof(message_t));
-        printf("server:: waiting...\n");
+        fprintf(stderr,"server:: waiting...\n");
         int rc = UDP_Read(sd, &addr, (char*)message, BUFFER_SIZE);
-        printf("server:: read message [size:%d contents:(%s)]\n", rc, message->buffer);
+        fprintf(stderr,"server:: read message [size:%d contents:(%s)]\n", rc, message->buffer);
         if (rc > 0) {
             switch(message->mtype){
                 case MFS_INIT:
@@ -300,8 +297,8 @@ int main(int argc, char *argv[]) {
                 case MFS_LOOKUP:
                     result = lookup(message->inum,message->name);
                     message->inum = result;
-                    printf("Server: Lookup Reply\n");
                     rc = UDP_Write(sd, &addr, (char*)message, BUFFER_SIZE);
+                    fprintf(stderr,"Server: Lookup Reply\n");
                     break;
                 case MFS_STAT:
                     result = file_stat(message->inum);
@@ -310,32 +307,32 @@ int main(int argc, char *argv[]) {
                         message->type = result&1;
                         message->nbytes = result/2;
                     }
-                    printf("Server: Stat Reply\n");
                     rc = UDP_Write(sd, &addr, (char*)message, BUFFER_SIZE);
+                    fprintf(stderr,"Server: Stat Reply\n");
                     break;
                 case MFS_WRITE:
                     result = file_write(message->inum, message->buffer,message->offset,message->nbytes);
                     message->rc = result;
-                    printf("Server: Write Reply\n");
                     rc = UDP_Write(sd, &addr, (char*)message, BUFFER_SIZE);
+                    fprintf(stderr,"Server: Write Reply\n");
                     break;
                 case MFS_READ:
                     result = file_read(message->inum,message->buffer,message->offset,message->nbytes);
                     message->rc = result;
-                    printf("Server: Read reply\n");
                     rc = UDP_Write(sd, &addr, (char*)message, BUFFER_SIZE);
+                    fprintf(stderr,"Server: Read reply\n");
                     break;
                 case MFS_CRET:
                     result = create(message->inum,message->type,message->name);
                     message->rc = result;
-                    printf("Server: Create Reply\n");
                     rc = UDP_Write(sd,&addr,(char*)message,BUFFER_SIZE);
+                    fprintf(stderr,"Server: Create Reply\n");
                     break;
                 case MFS_UNLINK:
                     result = file_unlink(message->inum,message->name);
                     message->rc = result;
-                    printf("Server: Unlink Reply\n");
                     rc = UDP_Write(sd,&addr,(char*)message,BUFFER_SIZE);
+                    fprintf(stderr,"Server: Unlink Reply\n");
                 case MFS_SHUTDOWN:
                     exit(0);
                     break;
