@@ -2,6 +2,7 @@
 
 // create a socket and bind it to a port on the current machine
 // used to listen for incoming packets
+
 int UDP_Open(int port) {
     int fd;           
     if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
@@ -55,10 +56,23 @@ int UDP_Write(int fd, struct sockaddr_in *addr, char *buffer, int n) {
 }
 
 int UDP_Read(int fd, struct sockaddr_in *addr, char *buffer, int n) {
+    struct timeval * t = (struct timeval *) malloc(sizeof(struct timeval));
+    fd_set set;
+    FD_ZERO(&set);
+    FD_SET(fd,&set);
+    t->tv_sec = 5;
+    int r = select(fd+1,&set,NULL,NULL, t);
+    if(r == 0){
+        UDP_Read(fd,addr, buffer, n);
+    }
+    else{
     int len = sizeof(struct sockaddr_in); 
     int rc = recvfrom(fd, buffer, n, 0, (struct sockaddr *) addr, (socklen_t *) &len);
     // assert(len == sizeof(struct sockaddr_in)); 
-    return rc;
+        return rc;
+
+    }
+    return -1;
 }
 
 int UDP_Close(int fd) {
