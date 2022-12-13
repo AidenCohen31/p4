@@ -110,7 +110,6 @@ int MFS_Creat(int pinum, int type, char *name){
     }
     printf("client:: wait for reply...\n");
     rc = UDP_Read(sd, &addrRcv, (char *) &message, sizeof(message_t));
-    printf("Create returned with code %d\n",message.rc);
     if(message.rc!=0) return -1;
     return 0;
 }

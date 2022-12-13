@@ -2,6 +2,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
+#include <sys/param.h>
 #include <unistd.h>
 #include "udp.h"
 #include "ufs.h"
@@ -21,15 +22,21 @@ void intHandler(int dummy) {
     exit(130);
 }
 unsigned int get_bit(unsigned int *bitmap, int position) {
-   int index = position / 32;
-   int offset = 31 - (position % 32);
-   return (bitmap[index] >> offset) & 0x1;
+    int index = position / 32;
+    int offset = 31 - (position % 32);
+    return (bitmap[index] >> offset) & 0x1;
 }
 
 void set_bit(unsigned int *bitmap, int position) {
-   int index = position / 32;
-   int offset = 31 - (position % 32);
-   bitmap[index] |= 0x1 << offset;
+    int index = position / 32;
+    int offset = 31 - (position % 32);
+    bitmap[index] |= 0x1 << offset;
+}
+
+void clear_bit(unsigned int *bitmap, int position){
+    int index = position / 32;
+    int offset = 31 - (position % 32);
+    bitmap[index] &= ~(0x1 << offset);
 }
 inode_t* get_inode(int inum){
     //inode is out of range
@@ -59,7 +66,7 @@ int find_free(char* bitmap, int length){
 int file_read(int inum, char *buffer, int offset, int nbytes){
     inode_t* inode = get_inode(inum);
     if(inode==0) return -1;
-    if(offset+nbytes>=inode->size){
+    if(offset+nbytes>inode->size){
         printf("Read too big\n");
         return -1;
     }
@@ -67,14 +74,14 @@ int file_read(int inum, char *buffer, int offset, int nbytes){
     // One block:
     if(offset%UFS_BLOCK_SIZE+nbytes<=UFS_BLOCK_SIZE){
         char* block = (char*)image+(inode->direct[offset/UFS_BLOCK_SIZE])*UFS_BLOCK_SIZE;
-        memcpy((void*)(block+offset%UFS_BLOCK_SIZE),(void*)buffer,nbytes);
+        memcpy((void*)buffer,(void*)(block+offset%UFS_BLOCK_SIZE),nbytes);
     }
     //Two blocks
     else{
         char* block1 = (char*)image+(inode->direct[offset/UFS_BLOCK_SIZE])*UFS_BLOCK_SIZE;
         char* block2 = (char*)image+(inode->direct[offset/UFS_BLOCK_SIZE+1])*UFS_BLOCK_SIZE;
-        memcpy((void*)(block1+offset%UFS_BLOCK_SIZE),(void*)buffer,UFS_BLOCK_SIZE-offset%UFS_BLOCK_SIZE);
-        memcpy((void*)(block2),(void*)(buffer+UFS_BLOCK_SIZE-offset%UFS_BLOCK_SIZE),nbytes-(UFS_BLOCK_SIZE-offset%UFS_BLOCK_SIZE));
+        memcpy((void*)buffer,(void*)(block1+offset%UFS_BLOCK_SIZE),UFS_BLOCK_SIZE-offset%UFS_BLOCK_SIZE);
+        memcpy((void*)(buffer+UFS_BLOCK_SIZE-offset%UFS_BLOCK_SIZE),(void*)(block2),nbytes-(UFS_BLOCK_SIZE-offset%UFS_BLOCK_SIZE));
     }
 
     return 0;
@@ -88,7 +95,17 @@ int file_write(int inum, char *buffer, int offset, int nbytes){
     if(offset+nbytes>DIRECT_PTRS*UFS_BLOCK_SIZE) return -1;
     //No need to allocate new block
     if((offset+nbytes)/UFS_BLOCK_SIZE==inode->size/UFS_BLOCK_SIZE){
-        // One block:
+        
+        inode->size = MAX(inode->size,offset+nbytes);
+    }
+    //Allocate new block
+    else{
+        int data_block = find_free(data_bitmap,s->data_region_len);
+        assert(data_block>-1);
+        inode->direct[inode->size/UFS_BLOCK_SIZE+1] = data_block+s->data_region_addr;
+        inode->size = offset+nbytes;
+    }
+    // One block:
         if(offset%UFS_BLOCK_SIZE+nbytes<=UFS_BLOCK_SIZE){
             char* block = (char*)image+(inode->direct[offset/UFS_BLOCK_SIZE])*UFS_BLOCK_SIZE;
             memcpy((void*)(block+offset%UFS_BLOCK_SIZE),(void*)buffer,nbytes);
@@ -100,17 +117,13 @@ int file_write(int inum, char *buffer, int offset, int nbytes){
             memcpy((void*)(block1+offset%UFS_BLOCK_SIZE),(void*)buffer,UFS_BLOCK_SIZE-offset%UFS_BLOCK_SIZE);
             memcpy((void*)(block2),(void*)(buffer+UFS_BLOCK_SIZE-offset%UFS_BLOCK_SIZE),nbytes-(UFS_BLOCK_SIZE-offset%UFS_BLOCK_SIZE));
         }
-    }
-    //Allocate new block
-    else{
-
-    }
     return 0;
 }
 
 int create(int pinum, int type, char *name){
     inode_t* parent_inode = get_inode(pinum);
     if(parent_inode==0) return -1;
+    if(parent_inode->type!=UFS_DIRECTORY) return -1;
     if(strlen(name)>=28) return -1;
 
     //Check for same name
@@ -190,16 +203,21 @@ int file_unlink(int pinum, char *name){
         dir_ent_t* directory_entry = (dir_ent_t*) get_pointer(parent_inode,i*sizeof(dir_ent_t));
         if(directory_entry->inum!=-1&&strcmp(directory_entry->name,name)==0){
             //Check directory is not empty
-            if(get_inode(directory_entry->inum)->type==UFS_DIRECTORY){
-                for(int j = 0; j<get_inode(directory_entry->inum)->size/sizeof(dir_ent_t); j++){ 
-                    dir_ent_t* entry = (dir_ent_t*) get_pointer(get_inode(directory_entry->inum),i*sizeof(dir_ent_t));
+            inode_t* inode = get_inode(directory_entry->inum);
+            if(inode->type==UFS_DIRECTORY){
+                for(int j = 0; j<inode->size/sizeof(dir_ent_t); j++){ 
+                    dir_ent_t* entry = (dir_ent_t*) get_pointer(inode,i*sizeof(dir_ent_t));
                     if(entry->inum!=-1) return -1;
                 }
             }
 
             //Unlink it
             directory_entry->inum = -1;
-
+            for(int i = 0; i<=inode->size/UFS_BLOCK_SIZE; i++){
+                clear_bit((unsigned int*)data_bitmap,inode->direct[i]-s->data_region_addr);
+            }
+            clear_bit((unsigned int*)inode_bitmap,directory_entry->inum);
+            return 0;
         }
     }
     return 0;
