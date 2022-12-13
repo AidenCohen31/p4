@@ -1,8 +1,7 @@
 CC     := gcc
 CFLAGS := -Wall -Werror 
 
-SRCS   := client.c \
-	server.c  \
+SRCS   := server.c  \
 	mkfs.c \
 
 
@@ -32,5 +31,9 @@ libmfs.o: libmfs.c
 
 main:
 	gcc -o main main.c -Wall -L. -lmfs
-runTests: compile
+	
+runTests:
 	sh /home/cs537-1/tests/p4/p4-test/runtests.sh -c
+
+makeImage: mkfs
+	./mkfs -f test.img

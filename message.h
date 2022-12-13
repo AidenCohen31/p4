@@ -17,6 +17,7 @@ typedef struct {
     int inum;
     int offset;
     int nbytes;
+    int type;
     char buffer[4096];
     char name[28];
 } message_t;
