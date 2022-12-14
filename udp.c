@@ -55,6 +55,7 @@ int UDP_Write(int fd, struct sockaddr_in *addr, char *buffer, int n) {
     return rc;
 }
 
+
 int UDP_Read(int fd, struct sockaddr_in *addr, char *buffer, int n) {
     struct timeval * t = (struct timeval *) malloc(sizeof(struct timeval));
     fd_set set;
@@ -66,14 +67,23 @@ int UDP_Read(int fd, struct sockaddr_in *addr, char *buffer, int n) {
         UDP_Read(fd,addr, buffer, n);
     }
     else{
-    int len = sizeof(struct sockaddr_in); 
-    int rc = recvfrom(fd, buffer, n, 0, (struct sockaddr *) addr, (socklen_t *) &len);
-    // assert(len == sizeof(struct sockaddr_in)); 
+        int len = sizeof(struct sockaddr_in); 
+        int rc = recvfrom(fd, buffer, n, 0, (struct sockaddr *) addr, (socklen_t *) &len);
+        // assert(len == sizeof(struct sockaddr_in)); 
         return rc;
 
     }
     return -1;
 }
+
+/*
+int UDP_Read(int fd, struct sockaddr_in *addr, char *buffer, int n) {
+    int len = sizeof(struct sockaddr_in); 
+    int rc = recvfrom(fd, buffer, n, 0, (struct sockaddr *) addr, (socklen_t *) &len);
+    // assert(len == sizeof(struct sockaddr_in)); 
+    return rc;
+}
+*/
 
 int UDP_Close(int fd) {
     return close(fd);

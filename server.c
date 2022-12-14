@@ -45,6 +45,7 @@ inode_t* get_inode(int inum){
         return 0;
     }
     //Maybe we consult bitmap??????
+    if(get_bit((unsigned int*)inode_bitmap,inum)==0) return 0;
     return &(inode_table[inum]);
 }
 
@@ -92,6 +93,7 @@ int file_write(int inum, char *buffer, int offset, int nbytes){
     inode_t* inode = get_inode(inum);
     if(inode==0) return -1;
     if(inode->type == UFS_DIRECTORY) return -1;
+    if(nbytes>4096) return -1;
     if(offset+nbytes>DIRECT_PTRS*UFS_BLOCK_SIZE) return -1;
     //No need to allocate new block
     if((offset+nbytes)/UFS_BLOCK_SIZE==inode->size/UFS_BLOCK_SIZE){
@@ -101,7 +103,7 @@ int file_write(int inum, char *buffer, int offset, int nbytes){
     //Allocate new block
     else{
         int data_block = find_free(data_bitmap,s->data_region_len);
-        assert(data_block>-1);
+        if(data_block<0) return -1;
         inode->direct[inode->size/UFS_BLOCK_SIZE+1] = data_block+s->data_region_addr;
         inode->size = offset+nbytes;
     }
@@ -117,6 +119,7 @@ int file_write(int inum, char *buffer, int offset, int nbytes){
             memcpy((void*)(block1+offset%UFS_BLOCK_SIZE),(void*)buffer,UFS_BLOCK_SIZE-offset%UFS_BLOCK_SIZE);
             memcpy((void*)(block2),(void*)(buffer+UFS_BLOCK_SIZE-offset%UFS_BLOCK_SIZE),nbytes-(UFS_BLOCK_SIZE-offset%UFS_BLOCK_SIZE));
         }
+    fprintf(stderr,"Wrote %d bytes at %d offset, new file size is now %d\n",nbytes,offset,inode->size);
     return 0;
 }
 
@@ -140,21 +143,23 @@ int create(int pinum, int type, char *name){
         if(directory_entry->inum==-1){
             strcpy(directory_entry->name,name);
             int index = find_free(inode_bitmap,s->num_inodes);
-            assert(index>-1);
+            if(index<0) return -1;
             directory_entry->inum = index;
             inode_t* inode = &inode_table[index];
             int data_block = find_free(data_bitmap,s->data_region_len);
-            assert(data_block>-1);
+            if(data_block<0) return -1;
             inode->direct[0] = data_block+s->data_region_addr;
             inode->size = 0;
             inode->type = type;
-            dir_ent_t* self = (dir_ent_t*)get_pointer(inode,0);
-            sprintf(self->name,".");
-            self-> inum = index;
-            dir_ent_t* parent = (dir_ent_t*)get_pointer(inode, sizeof(dir_ent_t));
-            sprintf(parent->name,"..");
-            parent -> inum = pinum;
-            inode->size = 2*sizeof(dir_ent_t);
+            if(inode->type==UFS_DIRECTORY){
+                dir_ent_t* self = (dir_ent_t*)get_pointer(inode,0);
+                sprintf(self->name,".");
+                self-> inum = index;
+                dir_ent_t* parent = (dir_ent_t*)get_pointer(inode, sizeof(dir_ent_t));
+                sprintf(parent->name,"..");
+                parent -> inum = pinum;
+                inode->size = 2*sizeof(dir_ent_t);
+            }
             flag = 1;
         }
     }
@@ -164,29 +169,31 @@ int create(int pinum, int type, char *name){
         //If parent directory is full allocate a new block for it
         if(parent_inode->size%UFS_BLOCK_SIZE==0){
             int data_block = find_free(data_bitmap,s->data_region_len);
-            assert(data_block>-1);
+            if(data_block<0) return -1;
             parent_inode->direct[parent_inode->size/UFS_BLOCK_SIZE] = data_block+s->data_region_addr;
         }
+        parent_inode->size +=sizeof(dir_ent_t);
         //Get last directory entry
         dir_ent_t* directory_entry = (dir_ent_t*) get_pointer(parent_inode,parent_inode->size-sizeof(dir_ent_t));
         strcpy(directory_entry->name,name);
         int index = find_free(inode_bitmap,s->num_inodes);
-        assert(index>-1);
+        if(index<0) return -1;
         directory_entry->inum = index;
         inode_t* inode = &inode_table[index];
         int data_block = find_free(data_bitmap,s->data_region_len);
-        assert(data_block>-1);
+        if(data_block<0) return -1;
         inode->direct[0] = data_block+s->data_region_addr;
         inode->size = 0;
         inode->type = type;
-        dir_ent_t* self = (dir_ent_t*)get_pointer(inode,0);
-        sprintf(self->name,".");
-        self-> inum = index;
-        dir_ent_t* parent = (dir_ent_t*)get_pointer(inode, sizeof(dir_ent_t));
-        sprintf(parent->name,"..");
-        parent -> inum = pinum;
-        parent_inode->size +=sizeof(dir_ent_t);
-        inode->size = 2*sizeof(dir_ent_t);
+        if(inode->type == UFS_DIRECTORY){
+            dir_ent_t* self = (dir_ent_t*)get_pointer(inode,0);
+            sprintf(self->name,".");
+            self-> inum = index;
+            dir_ent_t* parent = (dir_ent_t*)get_pointer(inode, sizeof(dir_ent_t));
+            sprintf(parent->name,"..");
+            parent -> inum = pinum;
+            inode->size = 2*sizeof(dir_ent_t);
+        }
     }
 
 
@@ -202,22 +209,25 @@ int file_unlink(int pinum, char *name){
     if(parent_inode->type!=UFS_DIRECTORY) return -1;
     for(int i = 0; i<parent_inode->size/sizeof(dir_ent_t); i++){
         dir_ent_t* directory_entry = (dir_ent_t*) get_pointer(parent_inode,i*sizeof(dir_ent_t));
+        fprintf(stderr,"Directory Entry %d Name: %s\n",i,directory_entry->name);
         if(directory_entry->inum!=-1&&strcmp(directory_entry->name,name)==0){
             //Check directory is not empty
+            fprintf(stderr,"Found File\n");
             inode_t* inode = get_inode(directory_entry->inum);
             if(inode->type==UFS_DIRECTORY){
-                for(int j = 0; j<inode->size/sizeof(dir_ent_t); j++){ 
-                    dir_ent_t* entry = (dir_ent_t*) get_pointer(inode,i*sizeof(dir_ent_t));
+                for(int j = 2; j<inode->size/sizeof(dir_ent_t); j++){ 
+                    dir_ent_t* entry = (dir_ent_t*) get_pointer(inode,j*sizeof(dir_ent_t));
                     if(entry->inum!=-1) return -1;
                 }
             }
 
             //Unlink it
             directory_entry->inum = -1;
-            for(int i = 0; i<=inode->size/UFS_BLOCK_SIZE; i++){
-                clear_bit((unsigned int*)data_bitmap,inode->direct[i]-s->data_region_addr);
+            for(int j = 0; j<=inode->size/UFS_BLOCK_SIZE; j++){
+                clear_bit((unsigned int*)data_bitmap,inode->direct[j]-s->data_region_addr);
             }
             clear_bit((unsigned int*)inode_bitmap,directory_entry->inum);
+            fprintf(stderr,"Successfully unlinked\n");
             return 0;
         }
     }
@@ -230,6 +240,7 @@ int lookup(int pinum, char *name){
     if(parent_inode==0 || parent_inode->type!=UFS_DIRECTORY) return -1;
     for(int i = 0; i<parent_inode->size/sizeof(dir_ent_t); i++){
         dir_ent_t* directory_entry = (dir_ent_t*) get_pointer(parent_inode,i*sizeof(dir_ent_t));
+        //fprintf(stderr,"Directory Entry %d Name: %s\n",i,directory_entry->name);
         if(directory_entry->inum!=-1&&strcmp(directory_entry->name,name)==0){
             return directory_entry->inum;
         }
@@ -260,6 +271,7 @@ int main(int argc, char *argv[]) {
 
     fileSystemImage = open(argv[2],O_RDWR|O_SYNC);
     //fileSystemImage = open("test.img",O_RDWR|O_SYNC);
+    
     if(fileSystemImage==-1){
         fprintf(stderr,"image does not exist\n");
         return -1;
@@ -287,9 +299,9 @@ int main(int argc, char *argv[]) {
         struct sockaddr_in addr;
         int result;
         message_t* message = malloc(sizeof(message_t));
-        fprintf(stderr,"server:: waiting...\n");
+        //fprintf(stderr,"server:: waiting...\n");
         int rc = UDP_Read(sd, &addr, (char*)message, BUFFER_SIZE);
-        fprintf(stderr,"server:: read message [size:%d contents:(%s)]\n", rc, message->buffer);
+        //fprintf(stderr,"server:: read message [size:%d contents:(%s)]\n", rc, message->buffer);
         if (rc > 0) {
             switch(message->mtype){
                 case MFS_INIT:
@@ -308,7 +320,7 @@ int main(int argc, char *argv[]) {
                         message->nbytes = result/2;
                     }
                     rc = UDP_Write(sd, &addr, (char*)message, BUFFER_SIZE);
-                    fprintf(stderr,"Server: Stat Reply\n");
+                    fprintf(stderr,"Server: Stat Reply %d %d\n",message->type,message->nbytes);
                     break;
                 case MFS_WRITE:
                     result = file_write(message->inum, message->buffer,message->offset,message->nbytes);
@@ -333,6 +345,7 @@ int main(int argc, char *argv[]) {
                     message->rc = result;
                     rc = UDP_Write(sd,&addr,(char*)message,BUFFER_SIZE);
                     fprintf(stderr,"Server: Unlink Reply\n");
+                    break;
                 case MFS_SHUTDOWN:
                     exit(0);
                     break;

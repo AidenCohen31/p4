@@ -1,0 +1,942 @@
+('starting', 'build')
+
+**********************************************************************
+
+Test build
+build project using make
+
+**********************************************************************
+Trying to build project using make
+make
+make[1]: Entering directory '/tmp/tmpb6DDd8/p'
+make[1]: Nothing to be done for 'compile'.
+make[1]: Leaving directory '/tmp/tmpb6DDd8/p'
+
+
+test build PASSED
+ (build project using make)
+
+('starting', 'shutdown')
+
+**********************************************************************
+
+Test shutdown
+init server and client then call shutdown
+
+**********************************************************************
+total blocks        36
+  inodes            32 [size of each: 128]
+  data blocks       32
+layout details
+  inode bitmap address/len 1 [1]
+  data bitmap address/len  2 [1]
+Starting server on port 9354
+/tmp/tmpb6DDd8/p/server 9354 /home/josephc/private/cs537/p4/p4/test.img
+
+
+test shutdown PASSED
+ (init server and client then call shutdown)
+
+('starting', 'creat')
+
+**********************************************************************
+
+Test creat
+creat a file and check with lookup
+
+**********************************************************************
+total blocks        36
+  inodes            32 [size of each: 128]
+  data blocks       32
+layout details
+  inode bitmap address/len 1 [1]
+  data bitmap address/len  2 [1]
+Starting server on port 7992
+/tmp/tmpb6DDd8/p/server 7992 /home/josephc/private/cs537/p4/p4/test.img
+Server: Create Reply
+Server: Lookup Reply
+client:: wait for reply...
+client:: wait for reply...
+
+
+test creat PASSED
+ (creat a file and check with lookup)
+
+('starting', 'write')
+
+**********************************************************************
+
+Test write
+write then read one block
+
+**********************************************************************
+total blocks        36
+  inodes            32 [size of each: 128]
+  data blocks       32
+layout details
+  inode bitmap address/len 1 [1]
+  data bitmap address/len  2 [1]
+Starting server on port 8479
+/tmp/tmpb6DDd8/p/server 8479 /home/josephc/private/cs537/p4/p4/test.img
+Server: Create Reply
+Server: Lookup Reply
+Wrote 4096 bytes at 0 offset, new file size is now 4096
+Server: Write Reply
+Server: Read reply
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+('START BLOCK 1\x00\x00\x00\x00\x00\x00\x00', '\x00\x00\x00\x00\x00\x00\x00\x00\x00END BLOCK 1')
+('START BLOCK 1\x00\x00\x00\x00\x00\x00\x00', '\x00\x00\x00\x00\x00\x00\x00\x00\x00END BLOCK 1')
+
+
+test write PASSED
+ (write then read one block)
+
+('starting', 'stat')
+
+**********************************************************************
+
+Test stat
+stat a regular file
+
+**********************************************************************
+total blocks        36
+  inodes            32 [size of each: 128]
+  data blocks       32
+layout details
+  inode bitmap address/len 1 [1]
+  data bitmap address/len  2 [1]
+Starting server on port 9508
+/tmp/tmpb6DDd8/p/server 9508 /home/josephc/private/cs537/p4/p4/test.img
+Server: Create Reply
+Server: Lookup Reply
+Server: Stat Reply 0 96
+Server: Stat Reply 1 0
+Wrote 4096 bytes at 0 offset, new file size is now 4096
+Server: Write Reply
+Server: Stat Reply 1 4096
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+
+
+test stat PASSED
+ (stat a regular file)
+
+('starting', 'overwrite')
+
+**********************************************************************
+
+Test overwrite
+overwrite a block
+
+**********************************************************************
+total blocks        36
+  inodes            32 [size of each: 128]
+  data blocks       32
+layout details
+  inode bitmap address/len 1 [1]
+  data bitmap address/len  2 [1]
+Starting server on port 6259
+/tmp/tmpb6DDd8/p/server 6259 /home/josephc/private/cs537/p4/p4/test.img
+Server: Create Reply
+Server: Lookup Reply
+Wrote 4096 bytes at 0 offset, new file size is now 4096
+Server: Write Reply
+Server: Read reply
+Wrote 4096 bytes at 0 offset, new file size is now 4096
+Server: Write Reply
+Server: Read reply
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+
+
+test overwrite PASSED
+ (overwrite a block)
+
+('starting', 'maxfile')
+
+**********************************************************************
+
+Test maxfile
+write largest possible file
+
+**********************************************************************
+total blocks        36
+  inodes            32 [size of each: 128]
+  data blocks       32
+layout details
+  inode bitmap address/len 1 [1]
+  data bitmap address/len  2 [1]
+Starting server on port 6967
+/tmp/tmpb6DDd8/p/server 6967 /home/josephc/private/cs537/p4/p4/test.img
+Server: Create Reply
+Server: Lookup Reply
+Wrote 4096 bytes at 0 offset, new file size is now 4096
+Server: Write Reply
+Wrote 4096 bytes at 4096 offset, new file size is now 8192
+Server: Write Reply
+Wrote 4096 bytes at 8192 offset, new file size is now 12288
+Server: Write Reply
+Wrote 4096 bytes at 12288 offset, new file size is now 16384
+Server: Write Reply
+Wrote 4096 bytes at 16384 offset, new file size is now 20480
+Server: Write Reply
+Wrote 4096 bytes at 20480 offset, new file size is now 24576
+Server: Write Reply
+Wrote 4096 bytes at 24576 offset, new file size is now 28672
+Server: Write Reply
+Wrote 4096 bytes at 28672 offset, new file size is now 32768
+Server: Write Reply
+Wrote 4096 bytes at 32768 offset, new file size is now 36864
+Server: Write Reply
+Wrote 4096 bytes at 36864 offset, new file size is now 40960
+Server: Write Reply
+Wrote 4096 bytes at 40960 offset, new file size is now 45056
+Server: Write Reply
+Wrote 4096 bytes at 45056 offset, new file size is now 49152
+Server: Write Reply
+Wrote 4096 bytes at 49152 offset, new file size is now 53248
+Server: Write Reply
+Wrote 4096 bytes at 53248 offset, new file size is now 57344
+Server: Write Reply
+Wrote 4096 bytes at 57344 offset, new file size is now 61440
+Server: Write Reply
+Wrote 4096 bytes at 61440 offset, new file size is now 65536
+Server: Write Reply
+Wrote 4096 bytes at 65536 offset, new file size is now 69632
+Server: Write Reply
+Wrote 4096 bytes at 69632 offset, new file size is now 73728
+Server: Write Reply
+Wrote 4096 bytes at 73728 offset, new file size is now 77824
+Server: Write Reply
+Wrote 4096 bytes at 77824 offset, new file size is now 81920
+Server: Write Reply
+Wrote 4096 bytes at 81920 offset, new file size is now 86016
+Server: Write Reply
+Wrote 4096 bytes at 86016 offset, new file size is now 90112
+Server: Write Reply
+Wrote 4096 bytes at 90112 offset, new file size is now 94208
+Server: Write Reply
+Wrote 4096 bytes at 94208 offset, new file size is now 98304
+Server: Write Reply
+Wrote 4096 bytes at 98304 offset, new file size is now 102400
+Server: Write Reply
+Wrote 4096 bytes at 102400 offset, new file size is now 106496
+Server: Write Reply
+Wrote 4096 bytes at 106496 offset, new file size is now 110592
+Server: Write Reply
+Wrote 4096 bytes at 110592 offset, new file size is now 114688
+Server: Write Reply
+Wrote 4096 bytes at 114688 offset, new file size is now 118784
+Server: Write Reply
+Wrote 4096 bytes at 118784 offset, new file size is now 122880
+Server: Write Reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+Server: Read reply
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+
+
+test maxfile PASSED
+ (write largest possible file)
+
+('starting', 'maxfile2')
+
+**********************************************************************
+
+Test maxfile2
+write more blocks than possible
+
+**********************************************************************
+total blocks        36
+  inodes            32 [size of each: 128]
+  data blocks       32
+layout details
+  inode bitmap address/len 1 [1]
+  data bitmap address/len  2 [1]
+Starting server on port 5614
+/tmp/tmpb6DDd8/p/server 5614 /home/josephc/private/cs537/p4/p4/test.img
+Server: Create Reply
+Server: Lookup Reply
+Wrote 1 bytes at 0 offset, new file size is now 1
+Server: Write Reply
+Wrote 1 bytes at 1 offset, new file size is now 2
+Server: Write Reply
+Wrote 1 bytes at 2 offset, new file size is now 3
+Server: Write Reply
+Wrote 1 bytes at 3 offset, new file size is now 4
+Server: Write Reply
+Wrote 1 bytes at 4 offset, new file size is now 5
+Server: Write Reply
+Wrote 1 bytes at 5 offset, new file size is now 6
+Server: Write Reply
+Wrote 1 bytes at 6 offset, new file size is now 7
+Server: Write Reply
+Wrote 1 bytes at 7 offset, new file size is now 8
+Server: Write Reply
+Wrote 1 bytes at 8 offset, new file size is now 9
+Server: Write Reply
+Wrote 1 bytes at 9 offset, new file size is now 10
+Server: Write Reply
+Wrote 1 bytes at 10 offset, new file size is now 11
+Server: Write Reply
+Wrote 1 bytes at 11 offset, new file size is now 12
+Server: Write Reply
+Wrote 1 bytes at 12 offset, new file size is now 13
+Server: Write Reply
+Wrote 1 bytes at 13 offset, new file size is now 14
+Server: Write Reply
+Wrote 1 bytes at 14 offset, new file size is now 15
+Server: Write Reply
+Wrote 1 bytes at 15 offset, new file size is now 16
+Server: Write Reply
+Wrote 1 bytes at 16 offset, new file size is now 17
+Server: Write Reply
+Wrote 1 bytes at 17 offset, new file size is now 18
+Server: Write Reply
+Wrote 1 bytes at 18 offset, new file size is now 19
+Server: Write Reply
+Wrote 1 bytes at 19 offset, new file size is now 20
+Server: Write Reply
+Wrote 1 bytes at 20 offset, new file size is now 21
+Server: Write Reply
+Wrote 1 bytes at 21 offset, new file size is now 22
+Server: Write Reply
+Wrote 1 bytes at 22 offset, new file size is now 23
+Server: Write Reply
+Wrote 1 bytes at 23 offset, new file size is now 24
+Server: Write Reply
+Wrote 1 bytes at 24 offset, new file size is now 25
+Server: Write Reply
+Wrote 1 bytes at 25 offset, new file size is now 26
+Server: Write Reply
+Wrote 1 bytes at 26 offset, new file size is now 27
+Server: Write Reply
+Wrote 1 bytes at 27 offset, new file size is now 28
+Server: Write Reply
+Wrote 1 bytes at 28 offset, new file size is now 29
+Server: Write Reply
+Wrote 1 bytes at 29 offset, new file size is now 30
+Server: Write Reply
+Wrote 1 bytes at 30 offset, new file size is now 31
+Server: Write Reply
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+IndexError: list index out of range
+
+
+test maxfile2 FAILED
+ (write more blocks than possible)
+ Unexpected exception list index out of range
+
+('starting', 'dir1')
+
+**********************************************************************
+
+Test dir1
+check root for dot entries
+
+**********************************************************************
+total blocks        36
+  inodes            32 [size of each: 128]
+  data blocks       32
+layout details
+  inode bitmap address/len 1 [1]
+  data bitmap address/len  2 [1]
+Starting server on port 8074
+/tmp/tmpb6DDd8/p/server 8074 /home/josephc/private/cs537/p4/p4/test.img
+Server: Lookup Reply
+Server: Lookup Reply
+client:: wait for reply...
+client:: wait for reply...
+
+
+test dir1 PASSED
+ (check root for dot entries)
+
+('starting', 'dir2')
+
+**********************************************************************
+
+Test dir2
+create a new directory and check it
+
+**********************************************************************
+total blocks        36
+  inodes            32 [size of each: 128]
+  data blocks       32
+layout details
+  inode bitmap address/len 1 [1]
+  data bitmap address/len  2 [1]
+Starting server on port 7338
+/tmp/tmpb6DDd8/p/server 7338 /home/josephc/private/cs537/p4/p4/test.img
+Server: Create Reply
+Server: Lookup Reply
+Server: Lookup Reply
+Server: Lookup Reply
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+
+
+test dir2 PASSED
+ (create a new directory and check it)
+
+('starting', 'baddir')
+
+**********************************************************************
+
+Test baddir
+try to create a file with a file parent inode
+
+**********************************************************************
+total blocks        36
+  inodes            32 [size of each: 128]
+  data blocks       32
+layout details
+  inode bitmap address/len 1 [1]
+  data bitmap address/len  2 [1]
+Starting server on port 9705
+/tmp/tmpb6DDd8/p/server 9705 /home/josephc/private/cs537/p4/p4/test.img
+Server: Create Reply
+Server: Lookup Reply
+Server: Create Reply
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+
+
+test baddir PASSED
+ (try to create a file with a file parent inode)
+
+('starting', 'baddir2')
+
+**********************************************************************
+
+Test baddir2
+try to lookup a file with a file parent inode
+
+**********************************************************************
+total blocks        36
+  inodes            32 [size of each: 128]
+  data blocks       32
+layout details
+  inode bitmap address/len 1 [1]
+  data bitmap address/len  2 [1]
+Starting server on port 5344
+/tmp/tmpb6DDd8/p/server 5344 /home/josephc/private/cs537/p4/p4/test.img
+Server: Create Reply
+Server: Lookup Reply
+Server: Lookup Reply
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+
+
+test baddir2 PASSED
+ (try to lookup a file with a file parent inode)
+
+('starting', 'unlink')
+
+**********************************************************************
+
+Test unlink
+unlink a file
+
+**********************************************************************
+total blocks        36
+  inodes            32 [size of each: 128]
+  data blocks       32
+layout details
+  inode bitmap address/len 1 [1]
+  data bitmap address/len  2 [1]
+Starting server on port 5236
+/tmp/tmpb6DDd8/p/server 5236 /home/josephc/private/cs537/p4/p4/test.img
+Server: Create Reply
+Server: Lookup Reply
+Directory Entry 0 Name: .
+Directory Entry 1 Name: ..
+Directory Entry 2 Name: test
+Found File
+Successfully unlinked
+Server: Unlink Reply
+Server: Lookup Reply
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+
+
+test unlink PASSED
+ (unlink a file)
+
+('starting', 'unlink2')
+
+**********************************************************************
+
+Test unlink2
+unlink a directory
+
+**********************************************************************
+total blocks        36
+  inodes            32 [size of each: 128]
+  data blocks       32
+layout details
+  inode bitmap address/len 1 [1]
+  data bitmap address/len  2 [1]
+Starting server on port 5637
+/tmp/tmpb6DDd8/p/server 5637 /home/josephc/private/cs537/p4/p4/test.img
+Server: Create Reply
+Server: Lookup Reply
+Directory Entry 0 Name: .
+Directory Entry 1 Name: ..
+Directory Entry 2 Name: test
+Found File
+Successfully unlinked
+Server: Unlink Reply
+Server: Lookup Reply
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+
+
+test unlink2 PASSED
+ (unlink a directory)
+
+('starting', 'empty')
+
+**********************************************************************
+
+Test empty
+unlink a non-empty directory
+
+**********************************************************************
+total blocks        36
+  inodes            32 [size of each: 128]
+  data blocks       32
+layout details
+  inode bitmap address/len 1 [1]
+  data bitmap address/len  2 [1]
+Starting server on port 7577
+/tmp/tmpb6DDd8/p/server 7577 /home/josephc/private/cs537/p4/p4/test.img
+Server: Create Reply
+Server: Lookup Reply
+Server: Create Reply
+Server: Lookup Reply
+Directory Entry 0 Name: .
+Directory Entry 1 Name: ..
+Directory Entry 2 Name: testdir
+Found File
+Server: Unlink Reply
+Directory Entry 0 Name: .
+Directory Entry 1 Name: ..
+Directory Entry 2 Name: testfile
+Found File
+Successfully unlinked
+Server: Unlink Reply
+Directory Entry 0 Name: .
+Directory Entry 1 Name: ..
+Directory Entry 2 Name: testdir
+Found File
+Successfully unlinked
+Server: Unlink Reply
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+
+
+test empty PASSED
+ (unlink a non-empty directory)
+
+('starting', 'name')
+
+**********************************************************************
+
+Test name
+name too long
+
+**********************************************************************
+total blocks        36
+  inodes            32 [size of each: 128]
+  data blocks       32
+layout details
+  inode bitmap address/len 1 [1]
+  data bitmap address/len  2 [1]
+Starting server on port 8825
+/tmp/tmpb6DDd8/p/server 8825 /home/josephc/private/cs537/p4/p4/test.img
+
+
+test name PASSED
+ (name too long)
+
+('starting', 'persist')
+
+**********************************************************************
+
+Test persist
+restart server after creating a file
+
+**********************************************************************
+total blocks        36
+  inodes            32 [size of each: 128]
+  data blocks       32
+layout details
+  inode bitmap address/len 1 [1]
+  data bitmap address/len  2 [1]
+Starting server on port 7964
+/tmp/tmpb6DDd8/p/server 7964 /home/josephc/private/cs537/p4/p4/test.img
+Server: Create Reply
+Server: Lookup Reply
+Wrote 4096 bytes at 0 offset, new file size is now 4096
+Server: Write Reply
+Server: Lookup Reply
+Server: Read reply
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+Starting server on port 7964
+/tmp/tmpb6DDd8/p/server 7964 /home/josephc/private/cs537/p4/p4/test.img
+Server: Lookup Reply
+Server: Read reply
+client:: wait for reply...
+client:: wait for reply...
+
+
+test persist PASSED
+ (restart server after creating a file)
+
+('starting', 'bigdir')
+
+**********************************************************************
+
+Test bigdir
+create a directory with 126 files
+
+**********************************************************************
+total blocks        36
+  inodes            32 [size of each: 128]
+  data blocks       32
+layout details
+  inode bitmap address/len 1 [1]
+  data bitmap address/len  2 [1]
+Starting server on port 8377
+/tmp/tmpb6DDd8/p/server 8377 /home/josephc/private/cs537/p4/p4/test.img
+Server: Create Reply
+Server: Lookup Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+Server: Create Reply
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+Failure: MFS_Creat returned failure inum=1 type=1 name='30'
+
+
+test bigdir FAILED
+ (create a directory with 126 files)
+ MFS_Creat returned failure inum=1 type=1 name='30'
+
+('starting', 'deep')
+
+**********************************************************************
+
+Test deep
+create many deeply nested directories
+
+**********************************************************************
+total blocks        36
+  inodes            32 [size of each: 128]
+  data blocks       32
+layout details
+  inode bitmap address/len 1 [1]
+  data bitmap address/len  2 [1]
+Starting server on port 9446
+/tmp/tmpb6DDd8/p/server 9446 /home/josephc/private/cs537/p4/p4/test.img
+Server: Create Reply
+Server: Lookup Reply
+Server: Create Reply
+Server: Lookup Reply
+Server: Create Reply
+Server: Lookup Reply
+Server: Create Reply
+Server: Lookup Reply
+Server: Create Reply
+Server: Lookup Reply
+Server: Lookup Reply
+Server: Lookup Reply
+Server: Lookup Reply
+Server: Lookup Reply
+Server: Lookup Reply
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+client:: wait for reply...
+
+
+test deep PASSED
+ (create many deeply nested directories)
+
+**********************************************************************
+Summary:
+test build PASSED
+ (build project using make)
+
+test shutdown PASSED
+ (init server and client then call shutdown)
+
+test creat PASSED
+ (creat a file and check with lookup)
+
+test write PASSED
+ (write then read one block)
+
+test stat PASSED
+ (stat a regular file)
+
+test overwrite PASSED
+ (overwrite a block)
+
+test maxfile PASSED
+ (write largest possible file)
+
+test maxfile2 FAILED
+ (write more blocks than possible)
+ Unexpected exception list index out of range
+
+test dir1 PASSED
+ (check root for dot entries)
+
+test dir2 PASSED
+ (create a new directory and check it)
+
+test baddir PASSED
+ (try to create a file with a file parent inode)
+
+test baddir2 PASSED
+ (try to lookup a file with a file parent inode)
+
+test unlink PASSED
+ (unlink a file)
+
+test unlink2 PASSED
+ (unlink a directory)
+
+test empty PASSED
+ (unlink a non-empty directory)
+
+test name PASSED
+ (name too long)
+
+test persist PASSED
+ (restart server after creating a file)
+
+test bigdir FAILED
+ (create a directory with 126 files)
+ MFS_Creat returned failure inum=1 type=1 name='30'
+
+test deep PASSED
+ (create many deeply nested directories)
+
+Passed 17 of 19 tests.
+Overall 17 of 19
